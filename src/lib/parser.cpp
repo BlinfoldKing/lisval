@@ -1,26 +1,154 @@
-#include "../include/parser.h"
 #include <iostream>
-#include<algorithm>
+#include <algorithm>
+#include <map>
+
+#include "../include/parser.h"
+#include "../include/token.h"
 
 using namespace std;
 
-string Token::debug() {
+string Token::debugToken() {
     string res = "";
-    if (this->type == TokenType::ATOM) {
-        res += this->atom;
-    } else {
-        res += "( ";
-        for (size_t i = 0; i < this->list.size(); i++) {
-            res += this->list[i]->debug() + " ";
-        }
-        res += ")";
+    switch (this->type) {
+        case TokenType::ATOM:
+            res += "ATOM";
+            break;
+        case TokenType::LIST:
+            {
+                res += "LIST{ ";
+                List* l = static_cast<List*>(this);
+                for (size_t i = 0; i < l->list.size(); i++) {
+                    res += l->list[i]->debugToken() + " ";
+                }
+                res += "}";
+                break;
+            }
+        case TokenType::NUMBER:
+            res += "NUMBER";
+            break;
+        case TokenType::VARIABLE:
+            res += "VARIABLE";
+            break;
+        case TokenType::UNARY_OPERATOR:
+            res += "UNARY_OPERATOR";
+            break;
+        case TokenType::BINARY_OPERATOR:
+            res += "BINARY_OPERATOR";
+            break;
+        default:
+            res += "UNKNOWN";
     }
 
     return res;
 }
 
-Parser::Parser(const string& str) {
-    this->str = str;
+string Token::debug() {
+    string res = "";
+    if (this->type == TokenType::LIST) {
+        res += "( ";
+        List* l = static_cast<List*>(this);
+        for (size_t i = 0; i < l->list.size(); i++) {
+            res += l->list[i]->debug() + " ";
+        }
+        res += ")";
+    } else {
+        Atom* a = static_cast<Atom*>(this);
+        res += a->str;
+    }
+
+    return res;
+}
+
+bool isLowercase(char x) {
+    return x >= 'a' && x <= 'z';
+}
+
+bool isUppercase(char x) {
+    return x >= 'A' && x <= 'Z';
+}
+
+bool isWhitespace(char x) {
+    return x == '\t' || x == '\n' || x == ' ';
+}
+
+UnaryOperatorType stringToUnaryOperator(string s) {
+    map<string, UnaryOperatorType> valid_operator;
+    valid_operator["not"] = UnaryOperatorType::NOT;
+    valid_operator["def"] = UnaryOperatorType::DEC;
+
+    return valid_operator[s];
+}
+
+bool isUnaryOperator(string s) {
+    map<string, bool> valid_operator;
+    valid_operator["not"] = true;
+    valid_operator["dec"] = true;
+
+    auto it = valid_operator.find(s);
+    if (it == valid_operator.end()) {
+        return false;
+    }
+
+    return valid_operator[s];
+}
+
+BinaryOperatorType stringToBinaryOperator(string s) {
+    map<string, BinaryOperatorType> valid_operator;
+    valid_operator["+"] = BinaryOperatorType::PLUS;
+    valid_operator["-"] = BinaryOperatorType::MINUS;
+    valid_operator["/"] = BinaryOperatorType::DIV;
+    valid_operator["*"] = BinaryOperatorType::TIMES;
+    valid_operator["and"] = BinaryOperatorType::AND;
+    valid_operator["or"] = BinaryOperatorType::OR;
+    valid_operator["def"] = BinaryOperatorType::DEF;
+
+    return valid_operator[s];
+}
+
+bool isBinaryOperator(string s) {
+    map<string, bool> valid_operator;
+    valid_operator["+"] = true;
+    valid_operator["-"] = true;
+    valid_operator["/"] = true;
+    valid_operator["*"] = true;
+    valid_operator["and"] = true;
+    valid_operator["or"] = true;
+
+    auto it = valid_operator.find(s);
+
+    if (it == valid_operator.end()) {
+        return false;
+    }
+
+    return valid_operator[s];
+}
+
+bool isNumber(char s) {
+    return s >= '0' && s <= '9';
+}
+
+Token* createSingularToken(string s) {
+    Token* t = NULL;
+    if (isUnaryOperator(s)) {
+        t = new UnaryOperator(stringToUnaryOperator(s));
+    } else if (isBinaryOperator(s)) {
+        cout << s << '\n';
+        t = new BinaryOperator(stringToBinaryOperator(s));
+    } else if (isLowercase(s[0])) {
+        t = new Atom(s);
+    } else if (isUppercase(s[0])) {
+        t = new Variable(s);
+    } else if (isNumber(s[0])) {
+        int x = (int) s[0] - '0';
+        for (size_t i = 1; i < s.length() && isNumber(s[i]); i++)  {
+            x *= 10;
+            x += (int) s[i] - '0';
+        }
+
+        t = new Number(x);
+    }
+
+    return t;
 }
 
 Token* Parser::parse() {
@@ -29,7 +157,7 @@ Token* Parser::parse() {
 
     vector<Token*> list_stack;
     for (size_t i = 0; i < this->str.length(); i++) {
-        Token* new_token_list = new Token;
+        List* new_token_list = new List();
         new_token_list->type = TokenType::LIST;
         if (this->str[i] == '(') {
             state.push_back(State::LIST_START);
@@ -41,9 +169,7 @@ Token* Parser::parse() {
                     this->parse_stack.pop_back();
                 } else {
                     if (newItem != "") {
-                        Token* new_token = new Token;
-                        new_token->type = TokenType::ATOM;
-                        new_token->atom = newItem;
+                        Token* new_token = createSingularToken(newItem);
                         new_token_list->list.push_back(new_token);
 
                         newItem = "";
@@ -61,9 +187,7 @@ Token* Parser::parse() {
             }
 
             if (newItem != "") {
-                Token* new_token = new Token;
-                new_token->type = TokenType::ATOM;
-                new_token->atom = newItem;
+                Token* new_token = createSingularToken(newItem);
                 new_token_list->list.push_back(new_token);
             }
 

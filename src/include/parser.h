@@ -1,12 +1,8 @@
-#include<map>
-#include<vector>
+#include <vector>
+
+#include "token.h"
 
 using namespace std;
-
-enum TokenType {
-    ATOM,
-    LIST,
-};
 
 enum State {
     CHAR,
@@ -15,18 +11,11 @@ enum State {
     SPACE,
 };
 
-struct Token {
-    TokenType type;
-    string atom;
-    vector<Token*> list;
-    string debug();
-};
-
 class Parser {
     private:
         vector<char> parse_stack;
         string str;
     public:
-        Parser(const string& str);
+        Parser(const string& input): str(input) {};
         Token* parse();
 };

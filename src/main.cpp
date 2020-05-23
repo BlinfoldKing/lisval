@@ -14,6 +14,7 @@ int main() {
     /* Print Version and Exit Information */
     puts("Press Ctrl+c to Exit\n");
 
+    string str = "";
     while (1) {
 
         /* Output our prompt and get input */
@@ -22,18 +23,25 @@ int main() {
         /* Add input to history */
         add_history(input);
 
-        string str(input);
+        string input_str(input);
         // trim input;
-        while (str.size() > 0 && str.back() == ' ') {
+        while (input_str.size() > 0 && input_str.back() == ' ') {
             str.pop_back();
+        }
+
+        str += input_str;
+        if (str.back() == '\\') {
+            str.pop_back();
+            continue;
         }
 
         if (str.length() > 0) {
             Parser p(str);
             auto res = p.parse();
-            if (res)
-                cout << res->debug() << '\n';
-            else
+            if (res) {
+                /* cout << res->debug() << '\n'; */
+                cout << res->debugToken() << '\n';
+            } else
                 cerr << "expression must be in a list format\n";
         }
         /* Free retrieved input */
