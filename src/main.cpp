@@ -7,6 +7,7 @@
 #include <editline/history.h>
 
 #include "include/parser.h"
+#include "include/evaluator.h"
 
 using namespace std;
 
@@ -15,10 +16,11 @@ int main() {
     puts("Press Ctrl+c to Exit\n");
 
     string str = "";
+    Evaluator E;
     while (1) {
 
         /* Output our prompt and get input */
-        char* input = readline("bracke> ");
+        char* input = readline("(lisval) ");
 
         /* Add input to history */
         add_history(input);
@@ -39,8 +41,12 @@ int main() {
             Parser p(str);
             auto res = p.parse();
             if (res) {
-                /* cout << res->debug() << '\n'; */
-                cout << res->debugToken() << '\n';
+                auto ret = E.eval(res);
+                if (ret != NULL) {
+                    cout << ret->debug() << '\n';
+                    /* cout << res->debug() << '\n'; */
+                    /* cout << res->debugToken() << '\n'; */
+                }
             } else
                 cerr << "expression must be in a list format\n";
         }

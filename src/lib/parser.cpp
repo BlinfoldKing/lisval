@@ -7,57 +7,7 @@
 
 using namespace std;
 
-string Token::debugToken() {
-    string res = "";
-    switch (this->type) {
-        case TokenType::ATOM:
-            res += "ATOM";
-            break;
-        case TokenType::LIST:
-            {
-                res += "LIST{ ";
-                List* l = static_cast<List*>(this);
-                for (size_t i = 0; i < l->list.size(); i++) {
-                    res += l->list[i]->debugToken() + " ";
-                }
-                res += "}";
-                break;
-            }
-        case TokenType::NUMBER:
-            res += "NUMBER";
-            break;
-        case TokenType::VARIABLE:
-            res += "VARIABLE";
-            break;
-        case TokenType::UNARY_OPERATOR:
-            res += "UNARY_OPERATOR";
-            break;
-        case TokenType::BINARY_OPERATOR:
-            res += "BINARY_OPERATOR";
-            break;
-        default:
-            res += "UNKNOWN";
-    }
 
-    return res;
-}
-
-string Token::debug() {
-    string res = "";
-    if (this->type == TokenType::LIST) {
-        res += "( ";
-        List* l = static_cast<List*>(this);
-        for (size_t i = 0; i < l->list.size(); i++) {
-            res += l->list[i]->debug() + " ";
-        }
-        res += ")";
-    } else {
-        Atom* a = static_cast<Atom*>(this);
-        res += a->str;
-    }
-
-    return res;
-}
 
 bool isLowercase(char x) {
     return x >= 'a' && x <= 'z';
@@ -71,10 +21,18 @@ bool isWhitespace(char x) {
     return x == '\t' || x == '\n' || x == ' ';
 }
 
+string unaryOperatorToString(UnaryOperatorType type) {
+    map<UnaryOperatorType, string> valid_operator;
+    valid_operator[UnaryOperatorType::NOT] = "not";
+    valid_operator[UnaryOperatorType::DEC] = "dec";
+
+    return valid_operator[type];
+}
+
 UnaryOperatorType stringToUnaryOperator(string s) {
     map<string, UnaryOperatorType> valid_operator;
     valid_operator["not"] = UnaryOperatorType::NOT;
-    valid_operator["def"] = UnaryOperatorType::DEC;
+    valid_operator["dec"] = UnaryOperatorType::DEC;
 
     return valid_operator[s];
 }
@@ -90,6 +48,19 @@ bool isUnaryOperator(string s) {
     }
 
     return valid_operator[s];
+}
+
+string binaryOperatorToString(BinaryOperatorType type) {
+    map<BinaryOperatorType, string> valid_operator;
+    valid_operator[BinaryOperatorType::PLUS] = "+";
+    valid_operator[BinaryOperatorType::MINUS] = "-";
+    valid_operator[BinaryOperatorType::DIV] = "/";
+    valid_operator[BinaryOperatorType::TIMES] = "*";
+    valid_operator[BinaryOperatorType::AND] = "and";
+    valid_operator[BinaryOperatorType::OR] = "or";
+    valid_operator[BinaryOperatorType::DEF] = "def";
+
+    return valid_operator[type];
 }
 
 BinaryOperatorType stringToBinaryOperator(string s) {
@@ -113,6 +84,7 @@ bool isBinaryOperator(string s) {
     valid_operator["*"] = true;
     valid_operator["and"] = true;
     valid_operator["or"] = true;
+    valid_operator["def"] = true;
 
     auto it = valid_operator.find(s);
 
@@ -127,12 +99,22 @@ bool isNumber(char s) {
     return s >= '0' && s <= '9';
 }
 
+bool stringToBool(string s) {
+    return s == "true";
+}
+
+string boolToString(bool s) {
+    if (s) return "true";
+    return "false";
+}
+
 Token* createSingularToken(string s) {
     Token* t = NULL;
-    if (isUnaryOperator(s)) {
+    if (s == "true" || s == "false") {
+        t = new Boolean(stringToBool(s));
+    } else if (isUnaryOperator(s)) {
         t = new UnaryOperator(stringToUnaryOperator(s));
     } else if (isBinaryOperator(s)) {
-        cout << s << '\n';
         t = new BinaryOperator(stringToBinaryOperator(s));
     } else if (isLowercase(s[0])) {
         t = new Atom(s);
@@ -217,3 +199,98 @@ Token* Parser::parse() {
     return res;
 }
 
+string Token::debugToken() {
+    string res = "";
+    switch (this->type) {
+        case TokenType::ATOM:
+            res += "ATOM";
+            break;
+        case TokenType::LIST:
+            {
+                res += "LIST{ ";
+                List* l = static_cast<List*>(this);
+                for (size_t i = 0; i < l->list.size(); i++) {
+                    res += l->list[i]->debugToken() + " ";
+                }
+                res += "}";
+                break;
+            }
+        case TokenType::NUMBER:
+            res += "NUMBER";
+            break;
+        case TokenType::VARIABLE:
+            res += "VARIABLE";
+            break;
+        case TokenType::UNARY_OPERATOR:
+            res += "UNARY_OPERATOR";
+            break;
+        case TokenType::BINARY_OPERATOR:
+            res += "BINARY_OPERATOR";
+            break;
+        case TokenType::BOOLEAN:
+            res += "BOOLEAN";
+            break;
+        default:
+            res += "UNKNOWN";
+    }
+
+    return res;
+}
+
+string Token::debug() {
+    string res = "";
+    switch (this->type) {
+        case TokenType::ATOM:
+        {
+            Atom* a = static_cast<Atom*>(this);
+            res += a->str;
+            break;
+        }
+        case TokenType::LIST:
+            {
+                res += "(";
+                List* l = static_cast<List*>(this);
+                for (size_t i = 0; i < l->list.size(); i++) {
+                    res += l->list[i]->debug();
+                    if (i < l->list.size() - 1) res += ' ';
+                }
+                res += ")";
+                break;
+            }
+        case TokenType::NUMBER:
+            {
+                Number* a = static_cast<Number*>(this);
+                res.push_back(a->value + '0');
+                break;
+            }
+        case TokenType::VARIABLE:
+        {
+            Variable* a = static_cast<Variable*>(this);
+            res += a->str;
+            break;
+        }
+        case TokenType::UNARY_OPERATOR:
+        {
+            UnaryOperator* a = static_cast<UnaryOperator*>(this);
+            res += unaryOperatorToString(a->operator_type);
+            break;
+        }
+        case TokenType::BINARY_OPERATOR:
+        {
+            BinaryOperator* a = static_cast<BinaryOperator*>(this);
+            res += binaryOperatorToString(a->operator_type);
+            break;
+        }
+        case TokenType::BOOLEAN:
+        {
+            Boolean* a = static_cast<Boolean*>(this);
+            res += boolToString(a->value);
+            break;
+        }
+        default:
+            res += "UNKNOWN";
+    }
+
+    return res;
+
+}

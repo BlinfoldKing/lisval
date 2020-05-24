@@ -14,6 +14,7 @@ enum class TokenType {
     UNARY_OPERATOR,
     BINARY_OPERATOR,
     LIST_OPERATOR,
+    BOOLEAN,
 };
 
 enum class UnaryOperatorType {
@@ -41,18 +42,18 @@ class Token {
 
 class UnaryOperator: public Token {
     public:
-        UnaryOperatorType type;
+        UnaryOperatorType operator_type;
         UnaryOperator(UnaryOperatorType t):
             Token(TokenType::UNARY_OPERATOR),
-            type(t) {};
+            operator_type(t) {};
 };
 
 class BinaryOperator: public Token {
     public:
-        BinaryOperatorType type;
+        BinaryOperatorType operator_type;
         BinaryOperator(BinaryOperatorType t):
             Token(TokenType::BINARY_OPERATOR),
-            type(t) {};
+            operator_type(t) {};
 };
 
 class Atom: public Token {
@@ -85,6 +86,14 @@ class Number: public Token {
         int value;
         Number(int v):
             Token(TokenType::NUMBER),
+            value(v) {};
+};
+
+class Boolean: public Token {
+    public:
+        bool value;
+        Boolean(bool v):
+            Token(TokenType::BOOLEAN),
             value(v) {};
 };
 
