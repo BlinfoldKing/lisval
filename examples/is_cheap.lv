@@ -1,0 +1,8 @@
+(
+    (dec (pen is-cheap))
+    (dec (apple is-cheap))
+    (def (UNKNOWN is-cheap) false)
+    (def (danu buy X) (X is-cheap))
+    (danu buy apple)
+    (not (danu buy pencil))
+)

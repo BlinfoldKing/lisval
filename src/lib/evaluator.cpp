@@ -474,8 +474,6 @@ bool compareList(List* input, List* signature) {
 }
 
 Token* Evaluator::eval(Token* input) {
-
-
     auto it = find_if(state.begin(), state.end(), [input](pair<Token*, function<Token*(Token*)>> handler) {
         auto signature = handler.first;
 
