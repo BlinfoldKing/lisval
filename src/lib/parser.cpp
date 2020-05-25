@@ -136,15 +136,48 @@ Token* createSingularToken(string s) {
 	return t;
 }
 
+void debugState(vector<State> state) {
+    for (size_t i = 0; i < state.size(); i++) {
+        string res = "";
+        switch (state[i]) {
+            case State::LIST_START:
+                res = "B";
+                break;
+            case State::CHAR:
+                res = "C";
+                break;
+            case State::LIST_TOKEN:
+                res = "L";
+                break;
+            case State::SPACE:
+                res = "S";
+                break;
+            case State::COMMENT:
+                res = "#";
+                break;
+        }
+
+        cout << res;
+    }
+
+    cout << '\n';
+}
+
 Token* Parser::parse() {
 	vector<State> state;
 	Token* res = NULL;
 
 	vector<Token*> list_stack;
 	for (size_t i = 0; i < this->str.length(); i++) {
+        /* debugState(state); */
 		List* new_token_list = new List();
 		new_token_list->type = TokenType::LIST;
-		if (this->str[i] == '(') {
+
+        if (state.size() > 0 && state.back() == State::COMMENT) {
+            if (this->str[i] == '\n') state.pop_back();
+        } else if(this->str[i] == '#') {
+            state.push_back(State::COMMENT);
+        } else if (this->str[i] == '(') {
 			state.push_back(State::LIST_START);
 		} else if (this->str[i] == ')') {
 			string newItem = "";
@@ -182,11 +215,13 @@ Token* Parser::parse() {
 			state.push_back(State::LIST_TOKEN);
 			list_stack.push_back(new_token_list);
 		} else if (this->str[i] == ' ') {
-			if (state.size() < 1 || state.back() != State::SPACE) {
+            if (state.size() < 1 || state.back() != State::SPACE) {
 				this->parse_stack.push_back(this->str[i]);
 				state.push_back(State::SPACE);
 			}
-		} else {
+		} else if (this->str[i] == '\n') {
+            continue;
+        } else {
 			state.push_back(State::CHAR);
 			this->parse_stack.push_back(this->str[i]);
 		}

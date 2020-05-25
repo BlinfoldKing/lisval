@@ -14,7 +14,7 @@ int main(int argc, char **argv) {
 		{
 			while (getline(myfile, line))
 			{
-				input += line;
+				input += line + '\n';
 			}
 			myfile.close();
 		}

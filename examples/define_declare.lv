@@ -2,7 +2,7 @@
     (dec (pen is-cheap))
     (dec (apple is-cheap))
     (def (UNKNOWN is-cheap) false)
-    (def (danu buy X) (X is-cheap))
+    (def (danu buy X) (X is-cheap)) # defult condition
     (print (danu buy apple))
     (print (not (danu buy pencil)))
 )

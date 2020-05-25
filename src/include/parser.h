@@ -9,6 +9,7 @@ enum State {
 	LIST_START,
 	LIST_TOKEN,
 	SPACE,
+	COMMENT,
 };
 
 class Parser {
