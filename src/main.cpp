@@ -26,8 +26,7 @@ int main(int argc, char **argv) {
 		Token* t = p.parse();
 		if (t) {
 			Evaluator e;
-			Token* result = e.eval(t);
-			if (result) cout << result->debug() << '\n';
+			e.eval(t);
 		} else {
 			cout << "invalid pattern: " << input << '\n';
 		}

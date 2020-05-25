@@ -31,6 +31,7 @@ class Evaluator {
 		// misc
 		pair<Token*, function<Token*(Token*)>> definitions();
 		pair<Token*, function<Token*(Token*)>> clear();
+		pair<Token*, function<Token*(Token*)>> print();
 	public:
 		Evaluator();
 		Token* eval(Token* token);

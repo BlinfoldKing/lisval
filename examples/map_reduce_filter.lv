@@ -5,9 +5,10 @@
         (reduce Acc X (+ Acc X) Lst))
     (def (add-1 Lst)
         (map X (+ X 1) Lst))
-    (
-        (only-1 (1 2 3))
-        (sum (1 2 3))
-        (add-1 (1 2 3))
-    )
+    (def (main) (
+        (print (only-1 (1 2 3)))
+        (print (sum (1 2 3)))
+        (print (add-1 (1 2 3)))
+    ))
+    (main)
 )

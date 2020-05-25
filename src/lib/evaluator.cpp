@@ -423,6 +423,24 @@ pair<Token*, function<Token*(Token*)>> Evaluator::definitions() {
     return res;
 }
 
+pair<Token*, function<Token*(Token*)>> Evaluator::print() {
+    Token* op = new Atom("print");
+    Token* input = new Variable("INPUT");
+    List* signature = new List();
+    signature->list.push_back(op);
+    signature->list.push_back(input);
+    Token* token = signature;
+    auto res = make_pair(token, [this](Token* input) {
+            List* input_list = static_cast<List*>(input);
+            cout << this->eval(input_list->list[1])->debug() << '\n';
+
+            Token* res = new Boolean(true);
+            return res;
+    });
+
+    return res;
+}
+
 vector<pair<Variable*, Token*>> generateVariableArgument(Token* condition, Token* input) {
     vector<pair<Variable*, Token*>> arguments;
     if (condition->type == TokenType::VARIABLE) {
@@ -588,6 +606,7 @@ Evaluator::Evaluator() {
     state.push_back(def());
 
     state.push_back(definitions());
+    state.push_back(print());
     state.push_back(clear());
 
     this->state = state;
