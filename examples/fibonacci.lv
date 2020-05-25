@@ -1,0 +1,11 @@
+(
+    (def (fib 1) 1)
+    (def (fib 2) 1)
+    (def (fib N)
+        (+
+            (fib (- N 1))
+            (fib (- N 2))
+        )
+    )
+    (print (map X (fib X) (range 1 11)))
+)

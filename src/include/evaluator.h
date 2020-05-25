@@ -8,6 +8,9 @@ using namespace std;
 
 class Evaluator {
 	private:
+        unsigned int max_stack_call = 256;
+		vector<Token*> stack_trace;
+
 		vector<pair<Token*, function<Token*(Token*)>>> state;
 		// unary
 		pair<Token*, function<Token*(Token*)>> dec();
@@ -22,6 +25,7 @@ class Evaluator {
 		pair<Token*, function<Token*(Token*)>> or_();
 		pair<Token*, function<Token*(Token*)>> def();
 		pair<Token*, function<Token*(Token*)>> eq();
+		pair<Token*, function<Token*(Token*)>> range();
 
         // Hof
 		pair<Token*, function<Token*(Token*)>> map();
@@ -32,6 +36,11 @@ class Evaluator {
 		pair<Token*, function<Token*(Token*)>> definitions();
 		pair<Token*, function<Token*(Token*)>> clear();
 		pair<Token*, function<Token*(Token*)>> print();
+
+        Token* subtitute_variable(Token* result_pattern, vector<pair<Variable*, Token*>> arguments);
+
+        vector<pair<Variable*, Token*>>
+            generateVariableArgument(Token* condition, Token* input) ;
 	public:
 		Evaluator();
 		Token* eval(Token* token);

@@ -15,6 +15,7 @@ enum class TokenType {
 	BINARY_OPERATOR,
 	LIST_OPERATOR,
 	BOOLEAN,
+	ERROR,
 };
 
 enum class UnaryOperatorType {
@@ -96,6 +97,15 @@ class Boolean: public Token {
 		Boolean(bool v):
 			Token(TokenType::BOOLEAN),
 			value(v) {};
+};
+
+class Error: public Token {
+    public:
+        string message;
+        Token* input;
+        Error(string m, Token* i):
+            Token(TokenType::ERROR),
+            message(m), input(i) {};
 };
 
 #endif

@@ -264,6 +264,9 @@ string Token::debugToken() {
 		case TokenType::BOOLEAN:
 			res += "BOOLEAN";
 			break;
+        case TokenType::ERROR:
+            res += "ERROR";
+            break;
 		default:
 			res += "UNKNOWN";
 	}
@@ -272,6 +275,9 @@ string Token::debugToken() {
 }
 
 string Token::debug() {
+    if (this == NULL) {
+        return "NULL";
+    }
 	string res = "";
 	switch (this->type) {
 		case TokenType::ATOM:
@@ -321,6 +327,12 @@ string Token::debug() {
 			res += boolToString(a->value);
 			break;
 		}
+        case TokenType::ERROR:
+        {
+			Error* a = static_cast<Error*>(this);
+		    res += "["+a->message+"]";
+            break;
+        }
 		default:
 			res += "UNKNOWN";
 	}
