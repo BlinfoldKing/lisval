@@ -170,7 +170,6 @@ pair<Token*, function<Token*(Token*)>> Evaluator::def() {
                     }
 
                     Token* result_list = subtitute_variable(result_token, arguments);
-                    cout << result_list->debug() << '\n';
                     Token* res = this->eval(result_list);
                     return res;
             });
@@ -262,11 +261,9 @@ pair<Token*, function<Token*(Token*)>> Evaluator::minus() {
     auto res = make_pair(token, [this](Token* input) {
             List* list = static_cast<List*>(input);
 
-            cout << input->debug() << '\n';
             Token* a_token = this->eval(list->list[1]);
             Token* b_token = this->eval(list->list[2]);
 
-            cout << a_token->debug() << '\n';
             if (a_token->type != TokenType::NUMBER) {
                 return input;
             }
@@ -380,6 +377,151 @@ pair<Token*, function<Token*(Token*)>> Evaluator::definitions() {
     return res;
 }
 
+vector<pair<Variable*, Token*>> generateVariableArgument(Token* condition, Token* input) {
+    vector<pair<Variable*, Token*>> arguments;
+    if (condition->type == TokenType::VARIABLE) {
+        Variable* var = static_cast<Variable*>(condition);
+        arguments.push_back(make_pair(var, input));
+    } else if (condition->type == TokenType::LIST) {
+        List* params = static_cast<List*>(condition);
+        List* args = static_cast<List*>(input);
+
+        for (size_t i = 0; i < params->list.size(); i++) {
+            if (params->list[i]->type == TokenType::VARIABLE) {
+                Variable* var = static_cast<Variable*>(params->list[i]);
+                arguments.push_back(make_pair(var, args->list[i]));
+            }
+        }
+    }
+
+    return arguments;
+}
+
+pair<Token*, function<Token*(Token*)>> Evaluator::map() {
+    Token* op = new Atom("map");
+    Token* input_pattern = new Variable("INPUT_PATTERN");
+    Token* result_pattern = new Variable("RESULT_RESULT");
+    Token* list_input = new Variable("LIST_INPUT");
+    List* signature = new List();
+    signature->list.push_back(op);
+    signature->list.push_back(input_pattern);
+    signature->list.push_back(result_pattern);
+    signature->list.push_back(list_input);
+    Token* token = signature;
+    auto res = make_pair(token, [this](Token* input) {
+            List* res = new List();
+            Token* t = NULL;
+
+            List* input_list = static_cast<List*>(input);
+
+            Token* input_pattern = input_list->list[1];
+            Token* result_pattern = input_list->list[2];
+            Token* list_token = input_list->list[3];
+
+            List* subtitute_list = static_cast<List*>(list_token);
+
+            for (size_t i = 0; i < subtitute_list->list.size(); i++) {
+                auto args = generateVariableArgument(input_pattern, subtitute_list->list[i]);
+                Token* output = subtitute_variable(result_pattern, args);
+
+                res->list.push_back(output);
+            }
+
+            t = this->eval(res);
+            return t;
+    });
+
+    return res;
+}
+
+pair<Token*, function<Token*(Token*)>> Evaluator::filter() {
+    Token* op = new Atom("filter");
+    Token* input_pattern = new Variable("INPUT_PATTERN");
+    Token* result_pattern = new Variable("RESULT_RESULT");
+    Token* list_input = new Variable("LIST_INPUT");
+    List* signature = new List();
+    signature->list.push_back(op);
+    signature->list.push_back(input_pattern);
+    signature->list.push_back(result_pattern);
+    signature->list.push_back(list_input);
+    Token* token = signature;
+    auto res = make_pair(token, [this](Token* input) {
+            List* res = new List();
+            Token* t = NULL;
+
+            List* input_list = static_cast<List*>(input);
+
+            Token* input_pattern = input_list->list[1];
+            Token* result_pattern = input_list->list[2];
+            Token* list_token = input_list->list[3];
+
+            List* subtitute_list = static_cast<List*>(list_token);
+
+            for (size_t i = 0; i < subtitute_list->list.size(); i++) {
+                auto args = generateVariableArgument(input_pattern, subtitute_list->list[i]);
+                Token* output = subtitute_variable(result_pattern, args);
+
+                Token* filter = this->eval(output);
+                if (filter->type == TokenType::BOOLEAN) {
+                    Boolean* b = static_cast<Boolean*>(filter);
+                    if (b->value == true) {
+                        res->list.push_back(subtitute_list->list[i]);
+                    }
+                }
+            }
+
+            t = this->eval(res);
+            return t;
+    });
+
+    return res;
+}
+
+pair<Token*, function<Token*(Token*)>> Evaluator::reduce() {
+    Token* op = new Atom("reduce");
+    Token* accumulator = new Variable("ACCUMULATOR_PATTERN");
+    Token* input_pattern = new Variable("INPUT_PATTERN");
+    Token* result_pattern = new Variable("RESULT_PATTERN");
+    Token* list_input = new Variable("LIST_INPUT");
+    List* signature = new List();
+    signature->list.push_back(op);
+    signature->list.push_back(accumulator);
+    signature->list.push_back(input_pattern);
+    signature->list.push_back(result_pattern);
+    signature->list.push_back(list_input);
+    Token* token = signature;
+    auto res = make_pair(token, [this](Token* input) {
+            Token* t = NULL;
+
+            List* input_list = static_cast<List*>(input);
+
+            Token* accumulator_pattern = input_list->list[1];
+            Token* input_pattern = input_list->list[2];
+            Token* result_pattern = input_list->list[3];
+            Token* list_token = input_list->list[4];
+
+            List* subtitute_list = static_cast<List*>(list_token);
+
+            if (subtitute_list->list.size() < 1) return t;
+
+            Token* accumulator = subtitute_list->list[0];
+            Variable* accumulator_var = static_cast<Variable*>(accumulator_pattern);
+
+            for (size_t i = 1; i < subtitute_list->list.size(); i++) {
+                auto args = generateVariableArgument(input_pattern, subtitute_list->list[i]);
+                args.push_back(make_pair(accumulator_var, accumulator));
+
+                Token* output = subtitute_variable(result_pattern, args);
+                accumulator = this->eval(output);
+            }
+
+            t = this->eval(accumulator);
+            return t;
+    });
+
+    return res;
+}
+
 Evaluator::Evaluator() {
     vector<pair<Token*, function<Token*(Token*)>>> state;
 
@@ -390,8 +532,12 @@ Evaluator::Evaluator() {
     state.push_back(minus());
     state.push_back(times());
     state.push_back(div());
-    state.push_back(or_());
     state.push_back(and_());
+    state.push_back(or_());
+    state.push_back(map());
+    state.push_back(filter());
+    state.push_back(reduce());
+
     state.push_back(def());
 
     state.push_back(definitions());
