@@ -30,6 +30,7 @@ enum class BinaryOperatorType {
 	DEF,
 	AND,
 	OR,
+	EQ,
 };
 
 class Token {

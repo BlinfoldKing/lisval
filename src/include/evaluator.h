@@ -21,6 +21,7 @@ class Evaluator {
 		pair<Token*, function<Token*(Token*)>> and_();
 		pair<Token*, function<Token*(Token*)>> or_();
 		pair<Token*, function<Token*(Token*)>> def();
+		pair<Token*, function<Token*(Token*)>> eq();
 
         // Hof
 		pair<Token*, function<Token*(Token*)>> map();

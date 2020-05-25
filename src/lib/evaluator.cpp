@@ -99,6 +99,52 @@ pair<Token*, function<Token*(Token*)>> Evaluator::plus() {
     return res;
 }
 
+pair<Token*, function<Token*(Token*)>> Evaluator::eq() {
+    Token* op = new BinaryOperator(BinaryOperatorType::EQ);
+    Token* var1 = new Variable("L");
+    Token* var2 = new Variable("R");
+    List* signature = new List();
+    signature->list.push_back(op);
+    signature->list.push_back(var1);
+    signature->list.push_back(var2);
+    Token* token = signature;
+    auto res = make_pair(token, [this](Token* input) {
+            List* list = static_cast<List*>(input);
+
+            Token* a_token = this->eval(list->list[1]);
+            Token* b_token = this->eval(list->list[2]);
+
+            if (a_token->type != b_token->type) {
+                return new Boolean(false);
+            }
+
+            if (a_token->type == TokenType::NUMBER) {
+                Number* a = static_cast<Number*>(a_token);
+                Number* b = static_cast<Number*>(b_token);
+
+                return new Boolean(a->value == b->value);
+            }
+
+            if (a_token->type == TokenType::ATOM) {
+                Atom* a = static_cast<Atom*>(a_token);
+                Atom* b = static_cast<Atom*>(b_token);
+
+                return new Boolean(a->str == b->str);
+            }
+
+            if (a_token->type == TokenType::BOOLEAN) {
+                Boolean* a = static_cast<Boolean*>(a_token);
+                Boolean* b = static_cast<Boolean*>(b_token);
+
+                return new Boolean(a->value == b->value);
+            }
+
+            return new Boolean(false);
+    });
+
+    return res;
+}
+
 Token* subtitute_variable(Token* result_template, vector<pair<Variable*, Token*>> arguments) {
     Token* token = result_template;
     if (token->type == TokenType::VARIABLE) {
@@ -537,6 +583,7 @@ Evaluator::Evaluator() {
     state.push_back(map());
     state.push_back(filter());
     state.push_back(reduce());
+    state.push_back(eq());
 
     state.push_back(def());
 

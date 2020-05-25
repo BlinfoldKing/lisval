@@ -59,6 +59,7 @@ string binaryOperatorToString(BinaryOperatorType type) {
 	valid_operator[BinaryOperatorType::AND] = "and";
 	valid_operator[BinaryOperatorType::OR] = "or";
 	valid_operator[BinaryOperatorType::DEF] = "def";
+	valid_operator[BinaryOperatorType::EQ] = "=";
 
 	return valid_operator[type];
 }
@@ -72,6 +73,7 @@ BinaryOperatorType stringToBinaryOperator(string s) {
 	valid_operator["and"] = BinaryOperatorType::AND;
 	valid_operator["or"] = BinaryOperatorType::OR;
 	valid_operator["def"] = BinaryOperatorType::DEF;
+	valid_operator["="] = BinaryOperatorType::EQ;
 
 	return valid_operator[s];
 }
@@ -85,6 +87,7 @@ bool isBinaryOperator(string s) {
 	valid_operator["and"] = true;
 	valid_operator["or"] = true;
 	valid_operator["def"] = true;
+	valid_operator["="] = true;
 
 	auto it = valid_operator.find(s);
 
