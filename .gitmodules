@@ -1,3 +1,0 @@
-[submodule "ext/linenoise"]
-	path = ext/linenoise
-	url = https://github.com/arangodb/linenoise-ng.git

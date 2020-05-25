@@ -1,47 +1,26 @@
 #include <iostream>
 
-#include "linenoise.h"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "../include/parser.h"
 #include "../include/repl.h"
 
 void Repl::run() {
-	linenoiseInstallWindowChangeHandler();
-	linenoiseSetMultiLine(1);
 
-	const char *file = "~/lisval_history";
-
-	linenoiseHistoryLoad(file);
+	/* linenoiseHistoryLoad(file); */
 	cout << "Press Ctrl+C to exit\n\n";
 
-	char const *prompt = "(\x1b[1;32mlisval\x1b[0m) \u03bb ";
+	string prompt = "(\x1b[1;32mlisval\x1b[0m) \u03bb ";
 
 	string input = "";
 	while (1) {
-		char *result = linenoise(prompt);
+        cout << prompt;
 
-		if (result == NULL)
-		{
-			break;
-		}
-		else if (!strncmp(result, "(history)", 8))
-		{
-			/* Display the current history. */
-			for (int index = 0;; ++index)
-			{
-				char *hist = linenoiseHistoryLine(index);
-				if (hist == NULL)
-					break;
-				printf("%4d: %s\n", index, hist);
-				delete hist;
-			}
-		}
-		if (*result == '\0')
-		{
+        string result;
+        getline(cin, result);
+        cout << result << '\n';
+
+		if (input == "(history)") {
+
+		} else if (result == "") {
 			continue;
 		}
 
@@ -69,10 +48,6 @@ void Repl::run() {
 		}
 
 		input = "";
-		linenoiseHistoryAdd(result);
-		delete result;	
 	}
 
-	linenoiseHistorySave(file);
-	linenoiseHistoryFree();
 }
