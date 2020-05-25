@@ -214,7 +214,7 @@ Token* Parser::parse() {
 			state.pop_back();
 			state.push_back(State::LIST_TOKEN);
 			list_stack.push_back(new_token_list);
-		} else if (this->str[i] == ' ') {
+		} else if (this->str[i] == ' ' || this->str[i] == '\t') {
             if (state.size() < 1 || state.back() != State::SPACE) {
 				this->parse_stack.push_back(this->str[i]);
 				state.push_back(State::SPACE);

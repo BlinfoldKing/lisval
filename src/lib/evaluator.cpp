@@ -464,7 +464,7 @@ vector<pair<Variable*, Token*>> generateVariableArgument(Token* condition, Token
 pair<Token*, function<Token*(Token*)>> Evaluator::map() {
     Token* op = new Atom("map");
     Token* input_pattern = new Variable("INPUT_PATTERN");
-    Token* result_pattern = new Variable("RESULT_RESULT");
+    Token* result_pattern = new Variable("RESULT_PATTERN");
     Token* list_input = new Variable("LIST_INPUT");
     List* signature = new List();
     signature->list.push_back(op);
@@ -501,7 +501,7 @@ pair<Token*, function<Token*(Token*)>> Evaluator::map() {
 pair<Token*, function<Token*(Token*)>> Evaluator::filter() {
     Token* op = new Atom("filter");
     Token* input_pattern = new Variable("INPUT_PATTERN");
-    Token* result_pattern = new Variable("RESULT_RESULT");
+    Token* result_pattern = new Variable("RESULT_PATTERN");
     Token* list_input = new Variable("LIST_INPUT");
     List* signature = new List();
     signature->list.push_back(op);
