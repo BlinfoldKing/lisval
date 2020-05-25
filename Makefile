@@ -8,19 +8,12 @@ run:
 	@make build
 	@./build/app
 
-install/linenoise/nix:
+install/linenoise:
 	@cd ext/linenoise && \
 		rm -rf build && \
 		mkdir -p build && \
 		(cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make && sudo make install)
 
-install/linenoise/windows:
-	@cd ext/linenoise && \
-		rmd build && \
-		md -p build && \
-		(cd build && cmake -DCMAKE_BUILD_TYPE=Release .. && make && make install)
-
-
-install/nix:
+install:
 	@git submodule update --init
 	@make install/linenoise/nix
