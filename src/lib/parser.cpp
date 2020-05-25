@@ -1,13 +1,12 @@
 #include <iostream>
 #include <algorithm>
 #include <map>
+#include <string>
 
 #include "../include/parser.h"
 #include "../include/token.h"
 
 using namespace std;
-
-
 
 bool isLowercase(char x) {
 	return x >= 'a' && x <= 'z';
@@ -98,10 +97,6 @@ bool isBinaryOperator(string s) {
 	return valid_operator[s];
 }
 
-bool isNumber(char s) {
-	return s >= '0' && s <= '9';
-}
-
 bool stringToBool(string s) {
 	return s == "true";
 }
@@ -123,14 +118,15 @@ Token* createSingularToken(string s) {
 		t = new Atom(s);
 	} else if (isUppercase(s[0])) {
 		t = new Variable(s);
-	} else if (isNumber(s[0])) {
-		int x = (int) s[0] - '0';
-		for (size_t i = 1; i < s.length() && isNumber(s[i]); i++)  {
-			x *= 10;
-			x += (int) s[i] - '0';
-		}
+	} else {
+		try {
+			string::size_type sz;
+			float x = std::stof (s, &sz);
 
-		t = new Number(x);
+			t = new Number(x);
+		} catch (int e) {
+			std::cout << "parse error:" << e << '\n';
+		}
 	}
 
 	return t;
@@ -157,10 +153,10 @@ void debugState(vector<State> state) {
                 break;
         }
 
-        cout << res;
+        std::cout << res;
     }
 
-    cout << '\n';
+    std::cout << '\n';
 }
 
 Token* Parser::parse() {
@@ -298,7 +294,7 @@ string Token::debug() {
 		case TokenType::NUMBER:
 			{
 				Number* a = static_cast<Number*>(this);
-				res.push_back(a->value + '0');
+				res += to_string(a->value);
 				break;
 			}
 		case TokenType::VARIABLE:

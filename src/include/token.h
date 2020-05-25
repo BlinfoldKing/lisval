@@ -84,8 +84,8 @@ class List: public Token {
 
 class Number: public Token {
 	public:
-		int value;
-		Number(int v):
+		float value;
+		Number(float v):
 			Token(TokenType::NUMBER),
 			value(v) {};
 };

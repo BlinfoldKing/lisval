@@ -16,7 +16,6 @@ void Repl::run() {
 
         string result;
         getline(cin, result);
-        cout << result << '\n';
 
 		if (input == "(history)") {
 
