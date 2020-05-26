@@ -16,6 +16,15 @@ enum class TokenType {
 	LIST_OPERATOR,
 	BOOLEAN,
 	ERROR,
+	TYPE,
+};
+
+enum class TypeType {
+	ATOM,
+	LIST,
+	NUMBER,
+	BOOLEAN,
+	ERR,
 };
 
 enum class UnaryOperatorType {
@@ -40,6 +49,15 @@ class Token {
 		string debug();
 		string debugToken();
 		Token(TokenType t): type(t) {};
+};
+
+class Type: public Token {
+	public:
+		TypeType type_type;
+		Token* value;
+		Type(TypeType t, Token* v):
+			Token(TokenType::TYPE),
+			value(v) {};
 };
 
 class UnaryOperator: public Token {
@@ -106,6 +124,7 @@ class Error: public Token {
         Error(string m, Token* i):
             Token(TokenType::ERROR),
             message(m), input(i) {};
+		Token* unwrap() {return input;};
 };
 
 #endif

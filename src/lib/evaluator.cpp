@@ -52,7 +52,8 @@ pair<Token*, function<Token*(Token*)>> Evaluator::not_() {
 
             Token* pattern_token = this->eval(list->list[1]);
             if (pattern_token->type != TokenType::BOOLEAN) {
-                return input;
+                Token* t = new Error("expect a boolean, got:" + pattern_token->debug(), input);
+                return t;
             }
 
             Boolean* pattern = static_cast<Boolean*>(pattern_token);
@@ -82,11 +83,13 @@ pair<Token*, function<Token*(Token*)>> Evaluator::plus() {
             Token* b_token = this->eval(list->list[2]);
 
             if (a_token->type != TokenType::NUMBER) {
-                return input;
+                Token* t = new Error("expect a number, got: " + a_token->debug(), input);
+                return t;
             }
 
             if (b_token->type != TokenType::NUMBER) {
-                return input;
+                Token* t = new Error("expect a number, got: " + b_token->debug(), input);
+                return t;
             }
 
             Number* a = static_cast<Number*>(a_token);
@@ -169,12 +172,12 @@ pair<Token*, function<Token*(Token*)>> Evaluator::range() {
             Token* b_token = this->eval(list->list[2]);
 
             if (a_token->type != TokenType::NUMBER) {
-                Token* t = new Error("expect a number, got: " + a_token->debug(), a_token);
+                Token* t = new Error("expect a number, got: " + a_token->debug(), input);
                 return t;
             }
 
             if (b_token->type != TokenType::NUMBER) {
-                Token* t = new Error("expect a number, got: " + b_token->debug(), b_token);
+                Token* t = new Error("expect a number, got: " + b_token->debug(), input);
                 return t;
             }
 
@@ -317,12 +320,12 @@ pair<Token*, function<Token*(Token*)>> Evaluator::times() {
             Token* b_token = this->eval(list->list[2]);
 
             if (a_token->type != TokenType::NUMBER) {
-                Token* t = new Error("expect a number, got: " + a_token->debug(), a_token);
+                Token* t = new Error("expect a number, got: " + a_token->debug(), input);
                 return t;
             }
 
             if (b_token->type != TokenType::NUMBER) {
-                Token* t = new Error("expect a number, got: " + b_token->debug(), b_token);
+                Token* t = new Error("expect a number, got: " + b_token->debug(), input);
                 return t;
             }
 
@@ -352,12 +355,12 @@ pair<Token*, function<Token*(Token*)>> Evaluator::div() {
             Token* b_token = this->eval(list->list[2]);
 
             if (a_token->type != TokenType::NUMBER) {
-                Token* t = new Error("expect a number", a_token);
+                Token* t = new Error("expect a number, got: " + a_token->debug(), input);
                 return t;
             }
 
             if (b_token->type != TokenType::NUMBER) {
-                Token* t = new Error("expect a number", b_token);
+                Token* t = new Error("expect a number, got: " + b_token->debug(), input);
                 return t;
             }
 
@@ -387,12 +390,12 @@ pair<Token*, function<Token*(Token*)>> Evaluator::minus() {
             Token* b_token = this->eval(list->list[2]);
 
             if (a_token->type != TokenType::NUMBER) {
-                Token* t = new Error("expect a number, got: " + a_token->debug(), a_token);
+                Token* t = new Error("expect a number, got: " + a_token->debug(), input);
                 return t;
             }
 
             if (b_token->type != TokenType::NUMBER) {
-                Token* t = new Error("expect a number, got: " + b_token->debug(), b_token);
+                Token* t = new Error("expect a number, got: " + b_token->debug(), input);
                 return t;
             }
 
@@ -435,12 +438,12 @@ pair<Token*, function<Token*(Token*)>> Evaluator::or_() {
             Token* b_token = this->eval(list->list[2]);
 
             if (a_token->type != TokenType::BOOLEAN) {
-                Token* t = new Error("expect a boolean", a_token);
+                Token* t = new Error("expect a boolean, got: " + a_token->debug() , input);
                 return t;
             }
 
             if (b_token->type != TokenType::BOOLEAN) {
-                Token* t = new Error("expect a boolean", b_token);
+                Token* t = new Error("expect a boolean, got: " + a_token->debug(), input);
                 return t;
             }
 
@@ -470,11 +473,13 @@ pair<Token*, function<Token*(Token*)>> Evaluator::and_() {
             Token* b_token = this->eval(list->list[2]);
 
             if (a_token->type != TokenType::BOOLEAN) {
-                return input;
+                Token* t = new Error("expect a boolean, got: " + a_token->debug(), input);
+                return t;
             }
 
             if (b_token->type != TokenType::BOOLEAN) {
-                return input;
+                Token* t = new Error("expect a boolean, got: " + b_token->debug(), input);
+                return t;
             }
 
             Boolean* a = static_cast<Boolean*>(a_token);
@@ -496,8 +501,8 @@ pair<Token*, function<Token*(Token*)>> Evaluator::definitions() {
             for (size_t i = 0; i < this->state.size(); i++) {
                 cout << this->state[i].first->debug() << '\n';
             }
-            Token* res = new Boolean(true);
-            return res;
+
+            return nullptr;
     });
 
     return res;
@@ -515,8 +520,7 @@ pair<Token*, function<Token*(Token*)>> Evaluator::print() {
             Token* res = this->eval(input_list->list[1]);
             cout << res->debug() << '\n';
 
-            Token* t = new Boolean(true);
-            return t;
+            return res;
     });
 
     return res;
@@ -561,6 +565,11 @@ pair<Token*, function<Token*(Token*)>> Evaluator::map() {
 
             Token* input_pattern = input_list->list[1];
             Token* result_pattern = input_list->list[2];
+            if (result_pattern->type == TokenType::ERROR) {
+                Error* err = static_cast<Error*>(input_list->list[2]);
+                result_pattern = err->unwrap();
+            }
+
             Token* list_token = this->eval(input_list->list[3]);
             if (list_token->type != TokenType::LIST) {
                 t = new Error("expected a list, got:" + list_token->debug(), input);
@@ -602,7 +611,12 @@ pair<Token*, function<Token*(Token*)>> Evaluator::filter() {
 
             Token* input_pattern = input_list->list[1];
             Token* result_pattern = input_list->list[2];
-            Token* list_token = this->eval(input_list->list[3]);
+            if (result_pattern->type == TokenType::ERROR) {
+                Error* err = static_cast<Error*>(input_list->list[2]);
+                result_pattern = err->unwrap();
+            }
+
+            Token* list_token = input_list->list[3];
             if (list_token->type != TokenType::LIST) {
                 t = new Error("expected a list, got:" + list_token->debug(), input);
                 return t;
@@ -612,8 +626,8 @@ pair<Token*, function<Token*(Token*)>> Evaluator::filter() {
 
             for (size_t i = 0; i < subtitute_list->list.size(); i++) {
                 auto args = generateVariableArgument(input_pattern, subtitute_list->list[i]);
-                Token* output = subtitute_variable(result_pattern, args);
 
+                Token* output = subtitute_variable(result_pattern, args);
                 Token* filter = this->eval(output);
                 if (filter->type == TokenType::BOOLEAN) {
                     Boolean* b = static_cast<Boolean*>(filter);
@@ -651,6 +665,10 @@ pair<Token*, function<Token*(Token*)>> Evaluator::reduce() {
             Token* accumulator_pattern = input_list->list[1];
             Token* input_pattern = input_list->list[2];
             Token* result_pattern = input_list->list[3];
+            if (result_pattern->type == TokenType::ERROR) {
+                Error* err = static_cast<Error*>(input_list->list[3]);
+                result_pattern = err->unwrap();
+            }
             Token* list_token = this->eval(input_list->list[4]);
 
             if (list_token->type != TokenType::LIST) {
@@ -688,7 +706,6 @@ Evaluator::Evaluator() {
 
     state.push_back(dec());
     state.push_back(not_());
-
     state.push_back(plus());
     state.push_back(minus());
     state.push_back(times());
@@ -700,9 +717,7 @@ Evaluator::Evaluator() {
     state.push_back(reduce());
     state.push_back(eq());
     state.push_back(range());
-
     state.push_back(def());
-
     state.push_back(definitions());
     state.push_back(print());
     state.push_back(clear());
@@ -856,19 +871,28 @@ Token* Evaluator::eval(Token* input) {
         }
     }
 
+    Error* err = NULL;
     for (size_t i = 0; i < matches_handler.size(); i++) {
         if (this->stack_trace.size() < this->max_stack_call) {
             this->stack_trace.push_back(input);
             Token* res = matches_handler[i].second(input);
             this->stack_trace.pop_back();
 
-            if (res && res->type != TokenType::ERROR) {
-                return res;
+            if (res) {
+                if (res->type != TokenType::ERROR) {
+                    return res;
+                } else {
+                    err = static_cast<Error*>(res);
+                }
             }
         } else {
             return new Error("stack call limit exceeded", input);
         }
     }
+
+    if (err) {
+        return err;
+    };
 
     return input;
 }

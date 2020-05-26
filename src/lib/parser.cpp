@@ -124,10 +124,11 @@ Token* createSingularToken(string s) {
 			float x = std::stof (s, &sz);
 
 			t = new Number(x);
-		} catch (int e) {
-			std::cout << "parse error:" << e << '\n';
+		} catch (std::invalid_argument e) {
+            return new Error("syntax error: \"" + s + "\"", NULL);
 		}
 	}
+
 
 	return t;
 }
@@ -275,9 +276,6 @@ string Token::debugToken() {
 }
 
 string Token::debug() {
-    if (this == NULL) {
-        return "NULL";
-    }
 	string res = "";
 	switch (this->type) {
 		case TokenType::ATOM:
@@ -330,7 +328,7 @@ string Token::debug() {
         case TokenType::ERROR:
         {
 			Error* a = static_cast<Error*>(this);
-		    res += "["+a->message+"]";
+		    res += "(:error \""+a->message+"\")";
             break;
         }
 		default:
